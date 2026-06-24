@@ -25,7 +25,17 @@ const CAT_LABELS = {
   laitier: "🥛 Laitiers",
   oleagineux: "🌰 Oléagineux",
   condiment: "🧂 Condiments",
+  fibre_rich: "🌾 Fibres",
 };
+
+// Seuil au-delà duquel un aliment est considéré "riche en fibres" pour le filtre transversal
+const FIBER_RICH_THRESHOLD = 3; // grammes de fibres / 100g
+
+function matchesCategory(food, cat) {
+  if (cat === "all") return true;
+  if (cat === "fibre_rich") return (food.f || 0) >= FIBER_RICH_THRESHOLD;
+  return food.cat === cat;
+}
 
 const root = document.getElementById("app");
 const fabWrap = document.getElementById("fabWrap");
@@ -121,12 +131,12 @@ function bindTopNav() {
 // ===================== RENDER: HOME (sélection ingrédients pour recettes) =====================
 function renderHome() {
   const filteredFoods = FOODS.filter(food => {
-    const matchesCat = state.activeCat === "all" || food.cat === state.activeCat;
+    const matchesCat = matchesCategory(food, state.activeCat);
     const matchesSearch = !state.search || normalizeSearch(food.nom).includes(normalizeSearch(state.search));
     return matchesCat && matchesSearch;
   });
 
-  const cats = ["all", "proteine", "halal_sub", "feculent", "legumineuse", "legume", "fruit", "laitier", "oleagineux", "condiment"];
+  const cats = ["all", "proteine", "halal_sub", "feculent", "legumineuse", "legume", "fruit", "laitier", "oleagineux", "fibre_rich", "condiment"];
 
   root.innerHTML = `
     <div class="topbar">
@@ -379,6 +389,7 @@ function renderModalContent(recipe, portions) {
   const prot = round1(recipe.proteines * scale);
   const gluc = round1(recipe.glucides * scale);
   const lip = round1(recipe.lipides * scale);
+  const fib = round1((recipe.fibres || 0) * scale);
   const isHalalDish = recipeIsHalalSensitive(recipe);
 
   const ingredientsHtml = recipe.ingredients.map(ing => {
@@ -422,7 +433,7 @@ function renderModalContent(recipe, portions) {
       <div class="stat-row">
         <div class="stat-pill alt"><span class="v">${gluc}g</span><span class="l">Glucides</span></div>
         <div class="stat-pill alt"><span class="v">${lip}g</span><span class="l">Lipides</span></div>
-        <div class="stat-pill alt"><span class="v">${portions}</span><span class="l">Portions</span></div>
+        <div class="stat-pill alt"><span class="v">${fib}g</span><span class="l">Fibres</span></div>
       </div>
 
       <div class="portion-control">
@@ -486,7 +497,7 @@ modalSheet.addEventListener("touchend", e => {
 
 // ===================== CALCULATEUR NUTRITIONNEL =====================
 function calcTotals() {
-  let cal = 0, p = 0, g = 0, l = 0;
+  let cal = 0, p = 0, g = 0, l = 0, f = 0;
   Object.entries(state.calcItems).forEach(([foodId, qty]) => {
     const food = foodById(foodId);
     if (!food || !qty) return;
@@ -495,15 +506,16 @@ function calcTotals() {
     p += food.p * factor;
     g += food.g * factor;
     l += food.l * factor;
+    f += (food.f || 0) * factor;
   });
-  return { cal: Math.round(cal), p: round1(p), g: round1(g), l: round1(l) };
+  return { cal: Math.round(cal), p: round1(p), g: round1(g), l: round1(l), f: round1(f) };
 }
 
 function renderCalculator() {
   updateFab();
-  const cats = ["all", "proteine", "halal_sub", "feculent", "legumineuse", "legume", "fruit", "laitier", "oleagineux", "condiment"];
+  const cats = ["all", "proteine", "halal_sub", "feculent", "legumineuse", "legume", "fruit", "laitier", "oleagineux", "fibre_rich", "condiment"];
   const filteredFoods = FOODS.filter(food => {
-    const matchesCat = state.calcActiveCat === "all" || food.cat === state.calcActiveCat;
+    const matchesCat = matchesCategory(food, state.calcActiveCat);
     const matchesSearch = !state.calcSearch || normalizeSearch(food.nom).includes(normalizeSearch(state.calcSearch));
     return matchesCat && matchesSearch;
   });
@@ -596,6 +608,7 @@ function renderCalcTotalsBar(totals) {
       <div class="calc-total-pill"><span class="v">${totals.p}g</span><span class="l">Protéines</span></div>
       <div class="calc-total-pill"><span class="v">${totals.g}g</span><span class="l">Glucides</span></div>
       <div class="calc-total-pill"><span class="v">${totals.l}g</span><span class="l">Lipides</span></div>
+      <div class="calc-total-pill"><span class="v">${totals.f}g</span><span class="l">Fibres</span></div>
     </div>
   `;
 }
@@ -611,7 +624,7 @@ function renderCalcRow(food) {
         <span class="calc-emoji">${food.emoji}</span>
         <div class="calc-row-text">
           <span class="calc-name">${food.nom}${food.halal ? ' <span class="mini-halal">☑️</span>' : ""}</span>
-          <span class="calc-per100">${food.cal} kcal /100g · P${food.p} G${food.g} L${food.l}</span>
+          <span class="calc-per100">${food.cal} kcal /100g · P${food.p} G${food.g} L${food.l} F${food.f || 0}</span>
         </div>
       </div>
       <div class="calc-row-control">
