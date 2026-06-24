@@ -50,6 +50,14 @@ body{
   margin: 0 auto;
   padding: 0 18px;
   position: relative;
+  transition: max-width .2s ease;
+}
+
+@media (min-width: 900px){
+  .app{
+    max-width: 1140px;
+    padding: 0 32px;
+  }
 }
 
 /* ---------- HEADER ---------- */
@@ -852,7 +860,156 @@ body{
   border-radius: var(--r-pill);
 }
 
+/* ============================================================
+   MODE DESKTOP — s'active automatiquement au-delà de 900px.
+   Aucune action de l'utilisateur requise : la mise en page
+   bascule seule selon la largeur de la fenêtre.
+   ============================================================ */
+@media (min-width: 900px){
+
+  body{ padding-bottom: 40px; }
+
+  /* Header : on garde une colonne centrale lisible pour le logo/recherche/filtres,
+     même si .app est large, pour éviter une barre de recherche démesurée. */
+  .topbar{
+    padding-top: 28px;
+  }
+  .brand, .search-wrap, .cat-tabs, .top-nav, .section-label{
+    max-width: 640px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .search-wrap input{
+    cursor: text;
+  }
+  .cat-tabs{
+    mask-image: none;
+    -webkit-mask-image: none;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .section-label{
+    max-width: 640px;
+  }
+
+  /* Grille d'aliments : passe en grille large, plus de colonnes, chips légèrement plus grandes */
+  .ing-grid{
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+  .ing-chip{
+    padding: 16px 8px 12px;
+    cursor: pointer;
+  }
+  .ing-chip:hover:not(.selected){
+    border-color: var(--coral);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
+  }
+  .ing-chip .emoji{ font-size: 28px; }
+
+  /* Résultats recettes : grille de cards au lieu d'une colonne empilée */
+  .results-header{
+    padding-top: 28px;
+  }
+  .sort-row{
+    mask-image: none;
+    -webkit-mask-image: none;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+  .sort-chip, .cat-tab, .top-nav-btn{
+    cursor: pointer;
+  }
+  .sort-chip:hover:not(.active), .cat-tab:hover:not(.active){
+    border-color: var(--coral);
+  }
+  .recipe-grid{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .recipe-card{
+    align-items: flex-start;
+    cursor: pointer;
+  }
+  .recipe-card:hover{
+    transform: translateY(-2px);
+    border-color: var(--coral);
+    box-shadow: 0 8px 20px rgba(43,33,24,0.12);
+  }
+
+  /* FAB : centré dans la largeur du contenu plutôt que pleine largeur d'écran */
+  .fab-wrap{
+    padding: 0 32px 28px;
+  }
+  .fab{
+    max-width: 420px;
+    margin: 0 auto;
+    cursor: pointer;
+  }
+
+  /* Modal recette : vraie fenêtre centrée au lieu d'un bottom-sheet mobile */
+  .modal-sheet{
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, -45%);
+    max-width: 580px;
+    width: 90%;
+    max-height: 85vh;
+    border-radius: var(--r-lg);
+    box-shadow: 0 24px 60px rgba(43,33,24,0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform .32s cubic-bezier(.22,.9,.3,1.1), opacity .2s ease;
+  }
+  .modal-sheet.show{
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .modal-handle{ display: none; }
+  .modal-close{ cursor: pointer; }
+  .modal-close:hover{ background: var(--cream-deep); }
+
+  /* Calculateur : grille 2 colonnes pour les lignes d'aliments */
+  .calc-list{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .calc-totals{
+    max-width: 640px;
+  }
+  .calc-add-btn, .calc-qty-btn{ cursor: pointer; }
+  .calc-row:hover{ box-shadow: 0 6px 18px rgba(43,33,24,0.1); }
+
+  /* Boutons divers : curseur souris cohérent */
+  .reset-btn, .recipe-card, .back-btn, .search-clear{
+    cursor: pointer;
+  }
+  .reset-btn:hover{ background: var(--cream-deep); }
+  .back-btn:hover{ background: var(--cream-deep); }
+}
+
+/* Très grands écrans : un peu plus de colonnes pour profiter de l'espace */
+@media (min-width: 1300px){
+  .ing-grid{
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .recipe-grid{
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .calc-list{
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 </style>
+
 </head>
 <body>
 
