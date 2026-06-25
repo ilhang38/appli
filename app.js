@@ -544,9 +544,8 @@ function renderCalculator() {
       <div class="cat-tabs" id="calcCatTabs">
         ${cats.map(c => `<button class="cat-tab ${state.calcActiveCat === c ? "active" : ""}" data-cat="${c}">${CAT_LABELS[c]}</button>`).join("")}
       </div>
+      ${itemCount > 0 ? renderCalcTotalsBar(totals) : ""}
     </div>
-
-    ${itemCount > 0 ? renderCalcTotalsBar(totals) : ""}
 
     <div class="section-label">
       <h2>Aliments</h2>
@@ -666,8 +665,8 @@ function updateCalcTotalsBarUI() {
   if (existingBar) {
     existingBar.outerHTML = renderCalcTotalsBar(totals);
   } else {
-    const sectionLabel = document.querySelector(".section-label");
-    if (sectionLabel) sectionLabel.insertAdjacentHTML("beforebegin", renderCalcTotalsBar(totals));
+    const catTabs = document.getElementById("calcCatTabs");
+    if (catTabs) catTabs.insertAdjacentHTML("afterend", renderCalcTotalsBar(totals));
   }
 }
 
